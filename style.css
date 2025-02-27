@@ -5,59 +5,82 @@
 }
 
 body {
-    background: #333;
+    background: #000;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     overflow: hidden;
 }
 
-.book {
+.gallery-container {
     position: relative;
-    width: 90%;
-    max-width: 1000px;
-    height: 80vh;
+    height: 100vh;
 }
 
-.page {
+.slide {
     position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    background: white;
-    box-shadow: 0 0 20px rgba(0,0,0,0.3);
-    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
 }
 
-.page.active {
-    display: block;
+.slide.active {
+    opacity: 1;
+    z-index: 1;
 }
 
-.page img {
+.gallery-image {
     width: 100%;
     height: 100%;
     object-fit: contain;
+    background: #000;
+    cursor: zoom-in;
+    transition: transform 0.3s ease;
 }
 
-.nav-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 50px;
-    height: 50px;
-    background: rgba(0,0,0,0.5);
-    color: white;
-    border: none;
+.gallery-image.zoomed {
+    cursor: zoom-out;
+    transform: scale(2);
+}
+
+.dots-container {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 2;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    font-size: 24px;
-    cursor: pointer;
-    z-index: 100;
+    background: rgba(255,255,255,0.4);
+    transition: background 0.3s ease;
 }
 
-.prev {
-    left: 20px;
+.dot.active {
+    background: rgba(255,255,255,0.9);
 }
 
-.next {
-    right: 20px;
+.loader {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s linear infinite;
+    z-index: 1000;
+}
+
+@keyframes spin {
+    to { transform: translate(-50%, -50%) rotate(360deg); }
 }

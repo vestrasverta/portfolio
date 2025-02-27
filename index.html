@@ -4,209 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Архитектурное портфолио</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #000;
-        }
-
-        /* Контейнер галереи */
-        .gallery {
-            position: relative;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Слайд */
-        .slide {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-
-        .slide.active {
-            opacity: 1;
-            z-index: 1;
-        }
-
-        /* Изображение с адаптивной загрузкой */
-        .slide-image {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            background: #000;
-            cursor: zoom-in;
-            transition: transform 0.3s ease;
-        }
-
-        /* Полноэкранный режим */
-        .slide-image.zoomed {
-            cursor: zoom-out;
-            transform: scale(2);
-        }
-
-        /* Навигационные точки */
-        .dots {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 10px;
-            z-index: 2;
-        }
-
-        .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.4);
-            transition: background 0.3s ease;
-        }
-
-        .dot.active {
-            background: rgba(255,255,255,0.9);
-        }
-
-        /* Индикатор загрузки */
-        .loader {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s linear infinite;
-            z-index: 1000;
-        }
-
-        @keyframes spin {
-            to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="gallery">
-        <!-- Загрузчик -->
+    <div class="gallery-container">
         <div class="loader"></div>
-
-        <!-- Слайды -->
+        
         <div class="slide active">
             <img 
-                src="images/photo1.jpg" 
-                class="slide-image" 
-                loading="lazy"
-                data-src-high="images/high/photo1-high.jpg"
-                alt="Архитектурный проект 1"
+                data-project="project1" 
+                class="gallery-image" 
+                alt="Проект 1"
             >
         </div>
-        
-        <!-- Добавьте остальные слайды по аналогии -->
+
+        <div class="slide">
+            <img 
+                data-project="project2" 
+                class="gallery-image" 
+                alt="Проект 2"
+            >
+        </div>
+
+        <div class="dots-container"></div>
     </div>
 
-    <div class="dots"></div>
-
-    <script>
-        // Конфигурация
-        const images = [
-            { low: 'images/photo1.jpg', high: 'images/high/photo1-high.jpg' },
-            // Добавьте остальные изображения
-        ];
-
-        // Инициализация
-        let currentSlide = 0;
-        const gallery = document.querySelector('.gallery');
-        const loader = document.querySelector('.loader');
-        const dotsContainer = document.querySelector('.dots');
-
-        // Создание навигационных точек
-        images.forEach((_, index) => {
-            const dot = document.createElement('div');
-            dot.className = `dot ${index === 0 ? 'active' : ''}`;
-            dotsContainer.appendChild(dot);
-        });
-
-        // Загрузка высококачественных изображений
-        function loadHighResImages() {
-            images.forEach(img => {
-                const highRes = new Image();
-                highRes.src = img.high;
-                highRes.onload = () => {
-                    document.querySelector(`[data-src-high="${img.high}"]`).src = img.high;
-                };
-            });
-            loader.style.display = 'none';
-        }
-
-        // Переключение слайдов
-        function showSlide(index) {
-            const slides = document.querySelectorAll('.slide');
-            const dots = document.querySelectorAll('.dot');
-            
-            slides[currentSlide].classList.remove('active');
-            dots[currentSlide].classList.remove('active');
-            
-            currentSlide = (index + images.length) % images.length;
-            
-            slides[currentSlide].classList.add('active');
-            dots[currentSlide].classList.add('active');
-        }
-
-        // Обработчики событий
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft') showSlide(currentSlide - 1);
-            if (e.key === 'ArrowRight') showSlide(currentSlide + 1);
-        });
-
-        let touchStartX = 0;
-        document.addEventListener('touchstart', e => {
-            touchStartX = e.touches[0].clientX;
-        });
-
-        document.addEventListener('touchend', e => {
-            const touchEndX = e.changedTouches[0].clientX;
-            const delta = touchStartX - touchEndX;
-            
-            if (Math.abs(delta) > 50) {
-                delta > 0 ? showSlide(currentSlide + 1) : showSlide(currentSlide - 1);
-            }
-        });
-
-        // Зум изображения
-        document.querySelectorAll('.slide-image').forEach(img => {
-            img.addEventListener('click', () => {
-                img.classList.toggle('zoomed');
-            });
-        });
-
-        // Инициализация
-        window.onload = () => {
-            loadHighResImages();
-            document.querySelectorAll('.slide').forEach((slide, index) => {
-                slide.innerHTML = `
-                    <img 
-                        src="${images[index].low}" 
-                        class="slide-image" 
-                        loading="lazy"
-                        data-src-high="${images[index].high}"
-                        alt="Архитектурный проект ${index + 1}"
-                    >
-                `;
-            });
-        };
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
