@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let translateX = 0;
     let translateY = 0;
     let isZoomed = false;
+    let isDragging = false;
 
     function loadImages() {
         images.forEach((imgData, index) => {
@@ -81,6 +82,26 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    slidesContainer.addEventListener("mousedown", (e) => {
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+    });
+
+    slidesContainer.addEventListener("mousemove", (e) => {
+        if (isZoomed && isDragging) {
+            translateX += e.clientX - startX;
+            translateY += e.clientY - startY;
+            startX = e.clientX;
+            startY = e.clientY;
+            document.querySelector(".slide.active").style.transform = `translateX(0) scale(${scale}) translate(${translateX}px, ${translateY}px)`;
+        }
+    });
+
+    slidesContainer.addEventListener("mouseup", () => {
+        isDragging = false;
+    });
+
     slidesContainer.addEventListener("wheel", (e) => {
         if (e.deltaY > 0) {
             scale -= 0.1;
@@ -90,14 +111,6 @@ document.addEventListener("DOMContentLoaded", function () {
         scale = Math.max(1, Math.min(2, scale));
         isZoomed = scale > 1;
         document.querySelector(".slide.active").style.transform = `translateX(0) scale(${scale}) translate(${translateX}px, ${translateY}px)`;
-    });
-
-    slidesContainer.addEventListener("mousemove", (e) => {
-        if (isZoomed) {
-            translateX += e.movementX;
-            translateY += e.movementY;
-            document.querySelector(".slide.active").style.transform = `translateX(0) scale(${scale}) translate(${translateX}px, ${translateY}px)`;
-        }
     });
 
     document.addEventListener("keydown", (e) => {
