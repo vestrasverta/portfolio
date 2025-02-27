@@ -41,6 +41,46 @@ body {
     transition: transform 0.3s ease-in-out;
 }
 
+.prev-slide, .next-slide {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    background-color: rgba(0,0,0,0.5);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.prev-slide {
+    left: 10px;
+}
+
+.next-slide {
+    right: 10px;
+}
+
+.prev-slide::before, .next-slide::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    border-style: solid;
+}
+
+.prev-slide::before {
+    border-width: 10px 15px 10px 0;
+    border-color: transparent white transparent transparent;
+}
+
+.next-slide::before {
+    border-width: 10px 0 10px 15px;
+    border-color: transparent transparent transparent white;
+}
+
 .thumbnails {
     display: flex;
     gap: 10px;

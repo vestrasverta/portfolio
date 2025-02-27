@@ -2,13 +2,16 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Архитектурное портфолио</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="gallery">
-        <div class="slides"></div>
+        <div class="slides">
+            <div class="prev-slide" onclick="prevSlide()"></div>
+            <div class="next-slide" onclick="nextSlide()"></div>
+        </div>
         <div class="thumbnails"></div>
     </div>
     <script src="script.js" defer></script>

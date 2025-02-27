@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let currentIndex = 0;
     let startX = 0;
+    let scale = 1;
 
     function loadImages() {
         images.forEach((imgData, index) => {
@@ -45,6 +46,16 @@ document.addEventListener("DOMContentLoaded", function () {
         currentIndex = index;
     }
 
+    function prevSlide() {
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+        showSlide(currentIndex);
+    }
+
+    function nextSlide() {
+        currentIndex = (currentIndex + 1) % images.length;
+        showSlide(currentIndex);
+    }
+
     slidesContainer.addEventListener("touchstart", (e) => {
         startX = e.touches[0].clientX;
     });
@@ -52,11 +63,39 @@ document.addEventListener("DOMContentLoaded", function () {
     slidesContainer.addEventListener("touchend", (e) => {
         let endX = e.changedTouches[0].clientX;
         if (startX - endX > 50) {
-            currentIndex = (currentIndex + 1) % images.length;
+            nextSlide();
         } else if (startX - endX < -50) {
-            currentIndex = (currentIndex - 1 + images.length) % images.length;
+            prevSlide();
         }
-        showSlide(currentIndex);
+    });
+
+    slidesContainer.addEventListener("wheel", (e) => {
+        if (e.deltaY > 0) {
+            scale -= 0.1;
+        } else {
+            scale += 0.1;
+        }
+        scale = Math.max(0.5, Math.min(2, scale));
+        document.querySelector(".slide.active").style.transform = `translateX(0) scale(${scale})`;
+    });
+
+    slidesContainer.addEventListener("click", (e) => {
+        if (e.target.classList.contains("slide")) {
+            if (scale === 1) {
+                scale = 2;
+            } else {
+                scale = 1;
+            }
+            document.querySelector(".slide.active").style.transform = `translateX(0) scale(${scale})`;
+        }
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft") {
+            prevSlide();
+        } else if (e.key === "ArrowRight") {
+            nextSlide();
+        }
     });
 
     loadImages();
