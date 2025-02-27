@@ -69,6 +69,14 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    slidesContainer.addEventListener("click", (e) => {
+        if (e.clientX < window.innerWidth / 2) {
+            prevSlide();
+        } else {
+            nextSlide();
+        }
+    });
+
     slidesContainer.addEventListener("wheel", (e) => {
         if (e.deltaY > 0) {
             scale -= 0.1;
@@ -77,17 +85,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         scale = Math.max(0.5, Math.min(2, scale));
         document.querySelector(".slide.active").style.transform = `translateX(0) scale(${scale})`;
-    });
-
-    slidesContainer.addEventListener("click", (e) => {
-        if (e.target.classList.contains("slide")) {
-            if (scale === 1) {
-                scale = 2;
-            } else {
-                scale = 1;
-            }
-            document.querySelector(".slide.active").style.transform = `translateX(0) scale(${scale})`;
-        }
     });
 
     document.addEventListener("keydown", (e) => {
