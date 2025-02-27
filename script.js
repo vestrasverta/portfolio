@@ -3,6 +3,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const dotsContainer = document.querySelector(".dots");
     const loader = document.querySelector(".loader");
 
+    if (!slidesContainer || !dotsContainer || !loader) {
+        console.error("Ошибка: не найдены элементы галереи.");
+        return;
+    }
+
     const images = [
         "images/desktop/project1-desktop-high.jpg",
         "images/desktop/project2-desktop-high.jpg",
