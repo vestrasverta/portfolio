@@ -1,69 +1,59 @@
 document.addEventListener("DOMContentLoaded", function () {
     const slidesContainer = document.querySelector(".slides");
-    const dotsContainer = document.querySelector(".dots");
-    const loader = document.querySelector(".loader");
-
-    if (!slidesContainer || !dotsContainer || !loader) {
-        console.error("Ошибка: не найдены элементы галереи.");
-        return;
-    }
+    const thumbnailsContainer = document.querySelector(".thumbnails");
 
     const images = [
-        "images/desktop/project1-desktop-high.jpg",
-        "images/desktop/project2-desktop-high.jpg",
-        "images/desktop/project3-desktop-high.jpg"
+        { full: "images/desktop/project1-desktop-high.jpg", thumb: "images/desktop/project1-desktop-low.jpg" },
+        { full: "images/desktop/project2-desktop-high.jpg", thumb: "images/desktop/project2-desktop-low.jpg" },
+        { full: "images/desktop/project3-desktop-high.jpg", thumb: "images/desktop/project3-desktop-low.jpg" }
     ];
 
     let currentIndex = 0;
+    let startX = 0;
 
     function loadImages() {
-        images.forEach((src, index) => {
+        images.forEach((imgData, index) => {
             const img = new Image();
-            img.src = src;
+            img.src = imgData.full;
             img.classList.add("slide");
             if (index === 0) img.classList.add("active");
             slidesContainer.appendChild(img);
 
-            const dot = document.createElement("span");
-            dot.dataset.index = index;
-            dot.addEventListener("click", function () {
-                showSlide(index);
-            });
-            dotsContainer.appendChild(dot);
+            const thumb = new Image();
+            thumb.src = imgData.thumb;
+            thumb.classList.add("thumbnail");
+            if (index === 0) thumb.classList.add("active");
+            thumb.addEventListener("click", () => showSlide(index));
+            thumbnailsContainer.appendChild(thumb);
         });
-
-        loader.style.display = "none";
-        updateDots();
     }
 
     function showSlide(index) {
         document.querySelectorAll(".slide").forEach((img, i) => {
-            img.classList.toggle("active", i === index);
+            img.style.transform = `translateX(${(i - index) * 100}%)`;
         });
+
+        document.querySelectorAll(".thumbnail").forEach((thumb, i) => {
+            thumb.classList.toggle("active", i === index);
+        });
+
         currentIndex = index;
-        updateDots();
     }
 
-    function updateDots() {
-        document.querySelectorAll(".dots span").forEach((dot, i) => {
-            dot.classList.toggle("active", i === currentIndex);
-        });
-    }
-
-    document.addEventListener("keydown", function (event) {
-        if (event.key === "ArrowRight") {
-            currentIndex = (currentIndex + 1) % images.length;
-            showSlide(currentIndex);
-        } else if (event.key === "ArrowLeft") {
-            currentIndex = (currentIndex - 1 + images.length) % images.length;
-            showSlide(currentIndex);
-        }
+    slidesContainer.addEventListener("touchstart", (e) => {
+        startX = e.touches[0].clientX;
     });
 
-    slidesContainer.addEventListener("click", function () {
-        currentIndex = (currentIndex + 1) % images.length;
+    slidesContainer.addEventListener("touchend", (e) => {
+        let endX = e.changedTouches[0].clientX;
+        if (startX - endX > 50) {
+            currentIndex = (currentIndex + 1) % images.length;
+        } else if (startX - endX < -50) {
+            currentIndex = (currentIndex - 1 + images.length) % images.length;
+        }
         showSlide(currentIndex);
     });
 
     loadImages();
+    showSlide(currentIndex);
 });
