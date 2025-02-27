@@ -15,9 +15,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let currentIndex = 0;
     let startX = 0;
+    let startY = 0;
     let scale = 1;
     let translateX = 0;
     let translateY = 0;
+    let isZoomed = false;
 
     function loadImages() {
         images.forEach((imgData, index) => {
@@ -49,24 +51,17 @@ document.addEventListener("DOMContentLoaded", function () {
         scale = 1;
         translateX = 0;
         translateY = 0;
+        isZoomed = false;
         document.querySelector(".slide.active").style.transform = `translateX(0) scale(${scale}) translate(${translateX}px, ${translateY}px)`;
     }
 
     slidesContainer.addEventListener("touchstart", (e) => {
         startX = e.touches[0].clientX;
-    });
-
-    slidesContainer.addEventListener("touchend", (e) => {
-        let endX = e.changedTouches[0].clientX;
-        if (startX - endX > 50) {
-            showNextSlide();
-        } else if (startX - endX < -50) {
-            showPrevSlide();
-        }
+        startY = e.touches[0].clientY;
     });
 
     slidesContainer.addEventListener("touchmove", (e) => {
-        if (scale !== 1) {
+        if (isZoomed) {
             translateX += e.touches[0].clientX - startX;
             translateY += e.touches[0].clientY - startY;
             startX = e.touches[0].clientX;
@@ -75,7 +70,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    let startY = 0;
+    slidesContainer.addEventListener("touchend", (e) => {
+        if (!isZoomed) {
+            let endX = e.changedTouches[0].clientX;
+            if (startX - endX > 50) {
+                showNextSlide();
+            } else if (startX - endX < -50) {
+                showPrevSlide();
+            }
+        }
+    });
 
     slidesContainer.addEventListener("wheel", (e) => {
         if (e.deltaY > 0) {
@@ -84,14 +88,33 @@ document.addEventListener("DOMContentLoaded", function () {
             scale += 0.1;
         }
         scale = Math.max(1, Math.min(2, scale));
+        isZoomed = scale > 1;
         document.querySelector(".slide.active").style.transform = `translateX(0) scale(${scale}) translate(${translateX}px, ${translateY}px)`;
+    });
+
+    slidesContainer.addEventListener("mousemove", (e) => {
+        if (isZoomed) {
+            translateX += e.movementX;
+            translateY += e.movementY;
+            document.querySelector(".slide.active").style.transform = `translateX(0) scale(${scale}) translate(${translateX}px, ${translateY}px)`;
+        }
     });
 
     document.addEventListener("keydown", (e) => {
         if (e.key === "ArrowLeft") {
-            showPrevSlide();
+            if (isZoomed) {
+                translateX -= 10;
+                document.querySelector(".slide.active").style.transform = `translateX(0) scale(${scale}) translate(${translateX}px, ${translateY}px)`;
+            } else {
+                showPrevSlide();
+            }
         } else if (e.key === "ArrowRight") {
-            showNextSlide();
+            if (isZoomed) {
+                translateX += 10;
+                document.querySelector(".slide.active").style.transform = `translateX(0) scale(${scale}) translate(${translateX}px, ${translateY}px)`;
+            } else {
+                showNextSlide();
+            }
         }
     });
 
