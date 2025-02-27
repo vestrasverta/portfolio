@@ -16,6 +16,8 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentIndex = 0;
     let startX = 0;
     let scale = 1;
+    let translateX = 0;
+    let translateY = 0;
 
     function loadImages() {
         images.forEach((imgData, index) => {
@@ -44,16 +46,10 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         currentIndex = index;
-    }
-
-    function prevSlide() {
-        currentIndex = (currentIndex - 1 + images.length) % images.length;
-        showSlide(currentIndex);
-    }
-
-    function nextSlide() {
-        currentIndex = (currentIndex + 1) % images.length;
-        showSlide(currentIndex);
+        scale = 1;
+        translateX = 0;
+        translateY = 0;
+        document.querySelector(".slide.active").style.transform = `translateX(0) scale(${scale}) translate(${translateX}px, ${translateY}px)`;
     }
 
     slidesContainer.addEventListener("touchstart", (e) => {
@@ -63,19 +59,23 @@ document.addEventListener("DOMContentLoaded", function () {
     slidesContainer.addEventListener("touchend", (e) => {
         let endX = e.changedTouches[0].clientX;
         if (startX - endX > 50) {
-            nextSlide();
+            showNextSlide();
         } else if (startX - endX < -50) {
-            prevSlide();
+            showPrevSlide();
         }
     });
 
-    slidesContainer.addEventListener("click", (e) => {
-        if (e.clientX < window.innerWidth / 2) {
-            prevSlide();
-        } else {
-            nextSlide();
+    slidesContainer.addEventListener("touchmove", (e) => {
+        if (scale !== 1) {
+            translateX += e.touches[0].clientX - startX;
+            translateY += e.touches[0].clientY - startY;
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            document.querySelector(".slide.active").style.transform = `translateX(0) scale(${scale}) translate(${translateX}px, ${translateY}px)`;
         }
     });
+
+    let startY = 0;
 
     slidesContainer.addEventListener("wheel", (e) => {
         if (e.deltaY > 0) {
@@ -83,17 +83,27 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             scale += 0.1;
         }
-        scale = Math.max(0.5, Math.min(2, scale));
-        document.querySelector(".slide.active").style.transform = `translateX(0) scale(${scale})`;
+        scale = Math.max(1, Math.min(2, scale));
+        document.querySelector(".slide.active").style.transform = `translateX(0) scale(${scale}) translate(${translateX}px, ${translateY}px)`;
     });
 
     document.addEventListener("keydown", (e) => {
         if (e.key === "ArrowLeft") {
-            prevSlide();
+            showPrevSlide();
         } else if (e.key === "ArrowRight") {
-            nextSlide();
+            showNextSlide();
         }
     });
+
+    function showNextSlide() {
+        currentIndex = (currentIndex + 1) % images.length;
+        showSlide(currentIndex);
+    }
+
+    function showPrevSlide() {
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+        showSlide(currentIndex);
+    }
 
     loadImages();
     showSlide(currentIndex);
