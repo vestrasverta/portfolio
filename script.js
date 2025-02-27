@@ -14,6 +14,7 @@ class Gallery {
         this.isDragging = false;
         this.startPos = { x: 0, y: 0 };
         this.touchStartX = 0;
+        this.animationInProgress = false;
 
         this.init();
     }
@@ -50,20 +51,43 @@ class Gallery {
     }
 
     showSlide(index) {
-        document.querySelectorAll('.slide').forEach(slide => 
-            slide.classList.remove('active'));
-        document.querySelectorAll('.thumbnail').forEach(thumb => 
-            thumb.classList.remove('active'));
+        if (this.animationInProgress || index === this.currentIndex) return;
         
-        this.currentIndex = index;
-        this.scale = 1;
-        this.pos = { x: 0, y: 0 };
+        this.animationInProgress = true;
+        const direction = index > this.currentIndex ? 'next' : 'prev';
         
-        this.container.children[index].classList.add('active');
-        this.thumbnails.children[index].classList.add('active');
+        const currentSlide = this.container.children[this.currentIndex];
+        const newSlide = this.container.children[index];
+        
+        newSlide.style.transform = direction === 'next' ? 'translateX(100%)' : 'translateX(-100%)';
+        newSlide.classList.add(direction);
+        newSlide.style.opacity = '1';
+        
+        requestAnimationFrame(() => {
+            currentSlide.classList.add(direction);
+            newSlide.classList.add('active');
+            newSlide.style.transform = 'translateX(0)';
+            
+            setTimeout(() => {
+                currentSlide.classList.remove('active', 'prev', 'next');
+                currentSlide.style.transform = '';
+                newSlide.classList.remove('prev', 'next');
+                this.currentIndex = index;
+                this.updateThumbnails();
+                this.animationInProgress = false;
+            }, 500);
+        });
+    }
+
+    updateThumbnails() {
+        document.querySelectorAll('.thumbnail').forEach((thumb, index) => {
+            thumb.classList.toggle('active', index === this.currentIndex);
+        });
     }
 
     handleZoom(e) {
+        if (this.animationInProgress) return;
+        
         if (e.deltaY < 0) {
             this.scale = Math.min(3, this.scale + 0.1);
         } else {
@@ -75,7 +99,7 @@ class Gallery {
     }
 
     handleDragStart(e) {
-        if (this.scale <= 1) return;
+        if (this.scale <= 1 || this.animationInProgress) return;
         this.isDragging = true;
         this.startPos = {
             x: e.clientX || e.touches[0].clientX,
@@ -84,7 +108,7 @@ class Gallery {
     }
 
     handleDragMove(e) {
-        if (!this.isDragging || this.scale <= 1) return;
+        if (!this.isDragging || this.scale <= 1 || this.animationInProgress) return;
         
         const currentX = e.clientX || e.touches[0].clientX;
         const currentY = e.clientY || e.touches[0].clientY;
@@ -102,11 +126,12 @@ class Gallery {
     }
 
     handleSwipeStart(e) {
+        if (this.scale > 1) return;
         this.touchStartX = e.touches[0].clientX;
     }
 
     handleSwipeEnd(e) {
-        if (this.scale > 1) return;
+        if (this.scale > 1 || this.animationInProgress) return;
         
         const touchEndX = e.changedTouches[0].clientX;
         const deltaX = touchEndX - this.touchStartX;
