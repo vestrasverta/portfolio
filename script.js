@@ -2,6 +2,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const slidesContainer = document.querySelector(".slides");
     const thumbnailsContainer = document.querySelector(".thumbnails");
 
+    if (!slidesContainer || !thumbnailsContainer) {
+        console.error('Контейнеры для слайдов или миниатюр не найдены');
+        return;
+    }
+
     const images = [
         { full: "images/desktop/project1-desktop-high.jpg", thumb: "images/desktop/project1-desktop-low.jpg" },
         { full: "images/desktop/project2-desktop-high.jpg", thumb: "images/desktop/project2-desktop-low.jpg" },
