@@ -1,85 +1,60 @@
 document.addEventListener("DOMContentLoaded", function () {
-  const images = {
-    desktop: [
-      "images/desktop/project1-desktop-high.jpg",
-      "images/desktop/project2-desktop-high.jpg",
-      "images/desktop/project3-desktop-high.jpg"
-    ],
-    mobile: [
-      "images/mobile/project1-mobile-high.jpg",
-      "images/mobile/project2-mobile-high.jpg",
-      "images/mobile/project3-mobile-high.jpg"
-    ]
-  };
+    const slidesContainer = document.querySelector(".slides");
+    const prevBtn = document.getElementById("prev");
+    const nextBtn = document.getElementById("next");
+    const dotsContainer = document.querySelector(".dots");
+    const loader = document.querySelector(".loader");
 
-  const isMobile = window.innerWidth <= 768;
-  const selectedImages = isMobile ? images.mobile : images.desktop;
-  const slidesContainer = document.getElementById("slides-container");
-  const dotsContainer = document.getElementById("dots-container");
-  let currentIndex = 0;
+    const images = [
+        "images/desktop/project1-desktop-high.jpg",
+        "images/desktop/project2-desktop-high.jpg",
+        "images/desktop/project3-desktop-high.jpg"
+    ];
 
-  selectedImages.forEach((imgSrc, index) => {
-    const slide = document.createElement("div");
-    slide.classList.add("slide");
-    const img = document.createElement("img");
-    img.src = imgSrc;
-    img.addEventListener("dblclick", () => toggleZoom(img));
-    slide.appendChild(img);
-    slidesContainer.appendChild(slide);
+    let currentIndex = 0;
 
-    const dot = document.createElement("span");
-    dot.classList.add("dot");
-    dot.addEventListener("click", () => showImage(index));
-    dotsContainer.appendChild(dot);
-  });
+    function loadImages() {
+        images.forEach((src, index) => {
+            const img = new Image();
+            img.src = src;
+            img.classList.add("slide");
+            if (index === 0) img.classList.add("active");
+            slidesContainer.appendChild(img);
 
-  function showImage(index) {
-    const slides = document.querySelectorAll(".slide");
-    const dots = document.querySelectorAll(".dot");
-    if (index >= slides.length) {
-      currentIndex = 0;
-    } else if (index < 0) {
-      currentIndex = slides.length - 1;
-    } else {
-      currentIndex = index;
+            const dot = document.createElement("span");
+            dot.dataset.index = index;
+            dot.addEventListener("click", function () {
+                showSlide(index);
+            });
+            dotsContainer.appendChild(dot);
+        });
+
+        loader.style.display = "none";
+        updateDots();
     }
-    slides.forEach(slide => (slide.style.display = "none"));
-    dots.forEach(dot => dot.classList.remove("active"));
-    slides[currentIndex].style.display = "block";
-    dots[currentIndex].classList.add("active");
-  }
 
-  function toggleZoom(img) {
-    if (img.classList.contains("zoomed")) {
-      img.classList.remove("zoomed");
-    } else {
-      img.classList.add("zoomed");
+    function showSlide(index) {
+        currentIndex = index;
+        const offset = -index * 100;
+        slidesContainer.style.transform = `translateX(${offset}%)`;
+        updateDots();
     }
-  }
 
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "ArrowRight") {
-      showImage(currentIndex + 1);
-    } else if (event.key === "ArrowLeft") {
-      showImage(currentIndex - 1);
+    function updateDots() {
+        document.querySelectorAll(".dots span").forEach((dot, i) => {
+            dot.classList.toggle("active", i === currentIndex);
+        });
     }
-  });
 
-  // Можно добавить обработку свайпов для мобильных устройств
-  let startX = null;
-  document.addEventListener("touchstart", (e) => {
-    startX = e.touches[0].clientX;
-  });
-  document.addEventListener("touchend", (e) => {
-    if (startX === null) return;
-    let endX = e.changedTouches[0].clientX;
-    if (startX - endX > 50) {
-      showImage(currentIndex + 1);
-    } else if (endX - startX > 50) {
-      showImage(currentIndex - 1);
-    }
-    startX = null;
-  });
+    prevBtn.addEventListener("click", function () {
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+        showSlide(currentIndex);
+    });
 
-  showImage(currentIndex);
+    nextBtn.addEventListener("click", function () {
+        currentIndex = (currentIndex + 1) % images.length;
+        showSlide(currentIndex);
+    });
+
+    loadImages();
 });
