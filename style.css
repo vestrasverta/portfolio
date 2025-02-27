@@ -2,11 +2,11 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    touch-action: none;
+    touch-action: pan-y;
 }
 
 body {
-    background-color: white;
+    background-color: #ffffff;
     overflow: hidden;
     height: 100vh;
 }
@@ -29,22 +29,14 @@ body {
     width: 100%;
     height: 100%;
     opacity: 0;
-    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
-    transform: translateX(100%);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
 }
 
 .slide.active {
     opacity: 1;
+    pointer-events: auto;
     transform: translateX(0);
-    z-index: 1;
-}
-
-.slide.prev {
-    transform: translateX(-100%);
-}
-
-.slide.next {
-    transform: translateX(100%);
 }
 
 .slide-image {
@@ -52,14 +44,10 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    max-width: 90%;
-    max-height: 90%;
+    max-width: 100%;
+    max-height: 100%;
     object-fit: contain;
-    cursor: grab;
-}
-
-.slide-image:active {
-    cursor: grabbing;
+    transition: transform 0.1s linear;
 }
 
 .thumbnails {
@@ -68,22 +56,25 @@ body {
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 10px;
-    z-index: 1;
-    padding: 10px;
+    gap: 8px;
+    z-index: 2;
+    padding: 8px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .thumbnail {
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     object-fit: cover;
-    border-radius: 5px;
+    border-radius: 4px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
+    border: 1px solid #ddd;
+    transition: transform 0.2s ease;
 }
 
 .thumbnail.active {
+    transform: scale(1.15);
     border-color: #007AFF;
-    transform: scale(1.2);
 }

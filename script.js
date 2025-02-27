@@ -2,21 +2,35 @@ class Gallery {
     constructor() {
         this.container = document.querySelector('.slides-container');
         this.thumbnails = document.querySelector('.thumbnails');
-        this.images = [
-            { full: 'images/desktop/project1-desktop-high.jpg', thumb: 'images/desktop/project1-desktop-low.jpg' },
-            { full: 'images/desktop/project2-desktop-high.jpg', thumb: 'images/desktop/project2-desktop-low.jpg' },
-            { full: 'images/desktop/project3-desktop-high.jpg', thumb: 'images/desktop/project3-desktop-low.jpg' }
-        ];
+        this.isMobile = window.matchMedia('(max-width: 768px)').matches;
         
+        this.images = this.getImagePaths();
         this.currentIndex = 0;
         this.scale = 1;
-        this.pos = { x: 0, y: 0 };
+        this.offset = { x: 0, y: 0 };
         this.isDragging = false;
         this.startPos = { x: 0, y: 0 };
         this.touchStartX = 0;
-        this.animationInProgress = false;
 
         this.init();
+    }
+
+    getImagePaths() {
+        const device = this.isMobile ? 'mobile' : 'desktop';
+        return [
+            { 
+                full: `images/${device}/high/project1-${device}-high.jpg`, 
+                thumb: `images/${device}/low/project1-${device}-low.jpg` 
+            },
+            { 
+                full: `images/${device}/high/project2-${device}-high.jpg`, 
+                thumb: `images/${device}/low/project2-${device}-low.jpg` 
+            },
+            { 
+                full: `images/${device}/high/project3-${device}-high.jpg`, 
+                thumb: `images/${device}/low/project3-${device}-low.jpg` 
+            }
+        ];
     }
 
     init() {
@@ -51,32 +65,17 @@ class Gallery {
     }
 
     showSlide(index) {
-        if (this.animationInProgress || index === this.currentIndex) return;
-        
-        this.animationInProgress = true;
-        const direction = index > this.currentIndex ? 'next' : 'prev';
-        
-        const currentSlide = this.container.children[this.currentIndex];
+        if (index === this.currentIndex) return;
+
+        const prevSlide = this.container.children[this.currentIndex];
         const newSlide = this.container.children[index];
         
-        newSlide.style.transform = direction === 'next' ? 'translateX(100%)' : 'translateX(-100%)';
-        newSlide.classList.add(direction);
-        newSlide.style.opacity = '1';
+        prevSlide.classList.remove('active');
+        newSlide.classList.add('active');
         
-        requestAnimationFrame(() => {
-            currentSlide.classList.add(direction);
-            newSlide.classList.add('active');
-            newSlide.style.transform = 'translateX(0)';
-            
-            setTimeout(() => {
-                currentSlide.classList.remove('active', 'prev', 'next');
-                currentSlide.style.transform = '';
-                newSlide.classList.remove('prev', 'next');
-                this.currentIndex = index;
-                this.updateThumbnails();
-                this.animationInProgress = false;
-            }, 500);
-        });
+        this.currentIndex = index;
+        this.updateThumbnails();
+        this.resetImageTransform();
     }
 
     updateThumbnails() {
@@ -85,21 +84,27 @@ class Gallery {
         });
     }
 
+    resetImageTransform() {
+        const img = this.getCurrentImage();
+        this.scale = 1;
+        this.offset = { x: 0, y: 0 };
+        img.style.transform = `translate(-50%, -50%) scale(1)`;
+    }
+
+    getCurrentImage() {
+        return this.container.querySelector('.active .slide-image');
+    }
+
     handleZoom(e) {
-        if (this.animationInProgress) return;
-        
-        if (e.deltaY < 0) {
-            this.scale = Math.min(3, this.scale + 0.1);
-        } else {
-            this.scale = Math.max(1, this.scale - 0.1);
-        }
-        
-        const img = this.container.querySelector('.active .slide-image');
-        img.style.transform = `translate(-50%, -50%) scale(${this.scale})`;
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -0.1 : 0.1;
+        this.scale = Math.min(3, Math.max(1, this.scale + delta));
+        this.updateImageTransform();
     }
 
     handleDragStart(e) {
-        if (this.scale <= 1 || this.animationInProgress) return;
+        if (this.scale <= 1) return;
+        
         this.isDragging = true;
         this.startPos = {
             x: e.clientX || e.touches[0].clientX,
@@ -108,17 +113,16 @@ class Gallery {
     }
 
     handleDragMove(e) {
-        if (!this.isDragging || this.scale <= 1 || this.animationInProgress) return;
+        if (!this.isDragging || this.scale <= 1) return;
         
         const currentX = e.clientX || e.touches[0].clientX;
         const currentY = e.clientY || e.touches[0].clientY;
         
-        this.pos.x += (currentX - this.startPos.x)/this.scale;
-        this.pos.y += (currentY - this.startPos.y)/this.scale;
+        this.offset.x += (currentX - this.startPos.x) / this.scale;
+        this.offset.y += (currentY - this.startPos.y) / this.scale;
         this.startPos = { x: currentX, y: currentY };
         
-        const img = this.container.querySelector('.active .slide-image');
-        img.style.transform = `translate(calc(-50% + ${this.pos.x}px), calc(-50% + ${this.pos.y}px)) scale(${this.scale})`;
+        this.updateImageTransform();
     }
 
     handleDragEnd() {
@@ -131,7 +135,7 @@ class Gallery {
     }
 
     handleSwipeEnd(e) {
-        if (this.scale > 1 || this.animationInProgress) return;
+        if (this.scale > 1) return;
         
         const touchEndX = e.changedTouches[0].clientX;
         const deltaX = touchEndX - this.touchStartX;
@@ -139,6 +143,14 @@ class Gallery {
         if (Math.abs(deltaX) > 50) {
             deltaX > 0 ? this.showPrevSlide() : this.showNextSlide();
         }
+    }
+
+    updateImageTransform() {
+        const img = this.getCurrentImage();
+        img.style.transform = `
+            translate(calc(-50% + ${this.offset.x}px), calc(-50% + ${this.offset.y}px))
+            scale(${this.scale})
+        `;
     }
 
     showNextSlide() {
@@ -152,12 +164,15 @@ class Gallery {
     }
 
     addEventListeners() {
-        this.container.addEventListener('wheel', (e) => this.handleZoom(e));
+        // Zoom
+        this.container.addEventListener('wheel', (e) => this.handleZoom(e), { passive: false });
         
+        // Desktop drag
         this.container.addEventListener('mousedown', (e) => this.handleDragStart(e));
         document.addEventListener('mousemove', (e) => this.handleDragMove(e));
         document.addEventListener('mouseup', () => this.handleDragEnd());
         
+        // Mobile swipe
         this.container.addEventListener('touchstart', (e) => {
             this.handleDragStart(e);
             this.handleSwipeStart(e);
@@ -168,6 +183,7 @@ class Gallery {
             this.handleSwipeEnd(e);
         });
         
+        // Keyboard
         document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowLeft') this.showPrevSlide();
             if (e.key === 'ArrowRight') this.showNextSlide();
