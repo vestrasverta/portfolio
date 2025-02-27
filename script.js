@@ -1,7 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
     const slidesContainer = document.querySelector(".slides");
-    const prevBtn = document.getElementById("prev");
-    const nextBtn = document.getElementById("next");
     const dotsContainer = document.querySelector(".dots");
     const loader = document.querySelector(".loader");
 
@@ -34,9 +32,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function showSlide(index) {
+        document.querySelectorAll(".slide").forEach((img, i) => {
+            img.classList.toggle("active", i === index);
+        });
         currentIndex = index;
-        const offset = -index * 100;
-        slidesContainer.style.transform = `translateX(${offset}%)`;
         updateDots();
     }
 
@@ -46,12 +45,17 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    prevBtn.addEventListener("click", function () {
-        currentIndex = (currentIndex - 1 + images.length) % images.length;
-        showSlide(currentIndex);
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "ArrowRight") {
+            currentIndex = (currentIndex + 1) % images.length;
+            showSlide(currentIndex);
+        } else if (event.key === "ArrowLeft") {
+            currentIndex = (currentIndex - 1 + images.length) % images.length;
+            showSlide(currentIndex);
+        }
     });
 
-    nextBtn.addEventListener("click", function () {
+    slidesContainer.addEventListener("click", function () {
         currentIndex = (currentIndex + 1) % images.length;
         showSlide(currentIndex);
     });
